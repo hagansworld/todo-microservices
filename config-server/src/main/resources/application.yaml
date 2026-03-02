@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: config-server
+
+  # Using Local files to load config server files
+  profiles:
+    active: native
+
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:///C:\Users\hagan\Desktop\SPRINGBOOT\Microservices\todo-microservices\config-server\src\main\resources\config
+
+  # Rabbit MQ configuration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASSWORD}
+
+# Actuator endpoint
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,busrefresh
+
+server:
+  port: 5555

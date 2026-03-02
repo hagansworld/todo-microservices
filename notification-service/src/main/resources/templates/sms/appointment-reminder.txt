@@ -1,0 +1,8 @@
+Hello {{NAME}},
+
+This is a reminder for your appointment at Medicare Health.
+
+Date: {{DATE}}
+Time: {{TIME}}
+
+Please arrive 15 minutes early.

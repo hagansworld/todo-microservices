@@ -1,0 +1,62 @@
+spring:
+  datasource:
+    url: ${TODO_DB_URL}
+    username: ${TODO_DB_USERNAME}
+    password: ${TODO_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+  # SMTP configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SUPPORT_EMAIL}
+    password: ${APP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.debug: true
+
+
+
+
+  # Rabbit MQ configuration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASSWORD}
+
+  # Spring Security jwt
+  security:
+    jwt:
+      secretKey: ${JWT_SECRET_KEY}
+      expiration-time: 3600000 # 1 hour
+      refresh-token: 604800000 # 7 days
+
+  # Actuator endpoint
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,busrefresh
+
+# Eureka client configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+    register-with-eureka: true
+    fetch-registry: true
+
+
+server:
+  port: 6061
+
+

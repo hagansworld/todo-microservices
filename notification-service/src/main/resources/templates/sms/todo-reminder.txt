@@ -1,0 +1,8 @@
+Hi {{NAME}},
+
+Reminder ⏰
+Your task "{{TASK}}" is due on {{DATE}}.
+
+Priority: {{PRIORITY}}
+
+Please don’t forget.

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #eef2f7;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            max-width: 620px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(90deg, #00796b, #26a69a); /* TaskTide branding */
+            padding: 20px 30px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .body {
+            padding: 30px;
+        }
+        .code-box {
+            margin: 25px 0;
+            background: #f7f9fc;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #00796b; /* TaskTide accent color */
+        }
+        .footer {
+            background: #f1f4f9;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #888888;
+        }
+        /* Mobile responsiveness */
+        @media only screen and (max-width: 600px) {
+            .container {
+                padding: 15px !important;
+            }
+            .header h2 {
+                font-size: 20px !important;
+            }
+            .body h3 {
+                font-size: 18px !important;
+            }
+            .footer {
+                font-size: 10px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>TaskTide</h2>
+    </div>
+
+    <div class="body">
+        <h3 style="color: #00796b;">Email Verification Required</h3>
+        <p style="color: #555555;">Please verify your email address to activate your TaskTide account.</p>
+
+        <div class="code-box">
+            {{CODE}}
+        </div>
+
+        <p style="font-size: 13px; color: #777777;">
+            Enter this code in the app to verify your email address.
+        </p>
+    </div>
+
+    <div class="footer">
+        © {{YEAR}} TaskTide. All rights reserved.
+    </div>
+</div>
+
+</body>
+</html>
