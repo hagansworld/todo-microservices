@@ -23,8 +23,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 465
-    username: hagan2842@gmail.com
-    password: hadeytvvufuxhofa
+    username: ${SUPPORT_EMAIL}
+    password:  ${APP_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.ssl.enable: true

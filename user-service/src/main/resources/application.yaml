@@ -28,12 +28,12 @@ spring:
 
 google:
   oauth2:
-    client-id: 125277378600-fh4e985v20uu0uvg8c3hpjh0btj8kjj3.apps.googleusercontent.com
+    client-id: ${GOOGLE_CLIENT_ID}
 
 admin:
   seed:
-    email: admin@tasktide.com
-    password: admin12345
+    email: ${ADMIN_SEED_EMAIL}
+    password: ${ADMIN_SEED_PASSWORD}
 
 #  notification-service
 services:
