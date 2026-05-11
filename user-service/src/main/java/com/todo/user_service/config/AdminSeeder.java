@@ -7,6 +7,7 @@ import com.todo.user_service.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -15,15 +16,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class AdminSeeder {
 
-    private static final String ADMIN_EMAIL = "admin@tasktide.com";
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${admin.seed.email}")
+    private String adminEmail;
+
+    @Value("${admin.seed.password}")
+    private String adminPassword;
 
     @PostConstruct
     public void seedAdmin() {
 
-        if (userRepository.existsByEmail(ADMIN_EMAIL)) {
+        if (userRepository.existsByEmail(adminEmail)) {
             log.info("Admin user already exists, skipping seeding");
             return;
         }
@@ -31,13 +36,13 @@ public class AdminSeeder {
         User user = new User();
         user.setUsername("admin");
         user.setFullName("System Admin");
-        user.setEmail(ADMIN_EMAIL);
-        user.setPassword(passwordEncoder.encode("admin@amagh"));
+        user.setEmail(adminEmail);
+        user.setPassword(passwordEncoder.encode(adminPassword));
         user.setRole(UserRole.ADMIN);
         user.setStatus(UserStatus.ACTIVE);
 
         userRepository.save(user);
 
-        log.info("Admin user created successfully");
+        log.info("Admin user created successfully: {}", adminEmail);
     }
 }

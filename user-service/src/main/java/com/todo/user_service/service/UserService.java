@@ -1,8 +1,6 @@
 package com.todo.user_service.service;
 
-import com.todo.user_service.dto.AddressDto;
-import com.todo.user_service.dto.UserRequestDto;
-import com.todo.user_service.dto.UserResponseDto;
+import com.todo.user_service.dto.*;
 import com.todo.user_service.entity.Address;
 import com.todo.user_service.entity.User;
 import com.todo.user_service.exception.NotFoundException;
@@ -144,6 +142,28 @@ public class UserService {
                 .stream()
                 .map(userMapper::mapToUserResponse)
                 .toList();
+    }
+
+    // ── Get notification preferences ─────────────────────────────────────────
+
+    public NotificationPreferenceResponseDto getNotificationPreferences(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with " + userId + " not found"));
+        return new NotificationPreferenceResponseDto(user.isEmailRemindersEnabled());
+    }
+
+// ── Update notification preferences ──────────────────────────────────────
+
+    public NotificationPreferenceResponseDto updateNotificationPreferences(
+            UUID userId,
+            UpdateNotificationPreferenceRequestDto request
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with " + userId + " not found"));
+        user.setEmailRemindersEnabled(request.isEmailRemindersEnabled());
+        userRepository.save(user);
+        log.info("Email reminders {} for user {}", request.isEmailRemindersEnabled() ? "enabled" : "disabled", userId);
+        return new NotificationPreferenceResponseDto(user.isEmailRemindersEnabled());
     }
 
 }

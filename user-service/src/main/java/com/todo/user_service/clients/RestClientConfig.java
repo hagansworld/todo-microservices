@@ -1,31 +1,20 @@
 package com.todo.user_service.clients;
 
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.web.client.RestClient;
 
 @Configuration
 public class RestClientConfig {
 
     /**
-     * Plain RestClient
-     * Used by Eureka internally
+     * Single plain RestClient.Builder.
+     *
+     * No @LoadBalanced needed — we're calling notification-service
+     * directly via the URL in services.notification-url, not via Eureka.
      */
     @Bean
-    @Primary
-    public RestClient.Builder plainRestClientBuilder() {
+    public RestClient.Builder restClientBuilder() {
         return RestClient.builder();
     }
-
-    /**
-     * Load-balanced RestClient (used ONLY for service-to-service calls)
-     */
-    @Bean
-    @LoadBalanced
-    public RestClient.Builder loadBalancedRestClientBuilder() {
-        return RestClient.builder();
-    }
-
 }

@@ -2,7 +2,7 @@ package com.todo_service.clients;
 
 import com.todo_service.exception.NotificationServiceException;
 import com.todo_service.exception.NotFoundException;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -14,13 +14,15 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 @Configuration
 public class NotificationServiceClientConfig {
 
+    @Value("${services.notification-url}")
+    private String notificationServiceUrl;
+
     @Bean
     public NotificationServiceClient notificationServiceClient(
-            @Qualifier("loadBalancedRestClientBuilder")
             RestClient.Builder restClientBuilder) {
 
         RestClient restClient = restClientBuilder
-                .baseUrl("http://notification-service")
+                .baseUrl(notificationServiceUrl)
                 .defaultStatusHandler(HttpStatusCode::is4xxClientError, (req, res) -> {
                     if (res.getStatusCode() == HttpStatus.NOT_FOUND) {
                         throw new NotFoundException("Notification Service: Not Found");
@@ -32,8 +34,7 @@ public class NotificationServiceClientConfig {
                 .build();
 
         RestClientAdapter adapter = RestClientAdapter.create(restClient);
-        HttpServiceProxyFactory factory =
-                HttpServiceProxyFactory.builderFor(adapter).build();
+        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
 
         return factory.createClient(NotificationServiceClient.class);
     }

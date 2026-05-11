@@ -1,6 +1,125 @@
+# ─── default (dev) ───────────────────────────────────────────────────────────
 spring:
   application:
     name: notification-service
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/todo-db
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      data-source-properties:
+        sslmode: disable
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: hagan2842@gmail.com
+    password: hadeytvvufuxhofa
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.ssl.enable: true
+      mail.smtp.ssl.trust: smtp.gmail.com
+      mail.smtp.starttls.enable: false
+      mail.smtp.starttls.required: false
+
+#  mail:
+#    host: smtp.gmail.com
+#    port: 465
+#    username: hagan2842@gmail.com
+#    password: hadeytvvufuxhofa
+#    properties:
+#      mail.smtp.auth: true
+#      mail.smtp.starttls.enable: true
+#      mail.smtp.debug: true
+
+tasktide:
+  app-url: http://localhost:6061
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.todo.notification_service: DEBUG  # see every email/SMS attempt
+    org.springframework.web: DEBUG
+    org.springframework.mail: DEBUG       # see SMTP send details
+
+
+server:
+  port: 6062
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+---
+# ─── prod ────────────────────────────────────────────────────────────────────
+spring:
   config:
-    import: optional:configserver:http://localhost:5555
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${TODO_DB_URL}
+    username: ${TODO_DB_USERNAME}
+    password: ${TODO_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SUPPORT_EMAIL}
+    password: ${APP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.debug: false
+
+tasktide:
+  app-url: ${TASKTIDE_APP_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+
+logging:
+  level:
+    com.todo.notification_service: INFO
+    org.springframework.web: INFO
+    org.springframework.mail: INFO
+
+
+server:
+  port: ${SERVER_PORT:6062}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

@@ -30,48 +30,47 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // Enable CORS and disable CSRF for stateless API
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // Set session management to stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // Configure URL authorization
                 .authorizeHttpRequests(auth -> auth
-                        // ===================== SWAGGER (PUBLIC) =====================
+
+                        // ── Swagger (public) ──────────────────────────────
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/api-docs",
+                                "/api-docs/**"
                         ).permitAll()
 
-                        // ===================== AUTH (PUBLIC) =====================
+                        // ── Auth (public) ─────────────────────────────────
                         .requestMatchers(
                                 "/api/auth/register-user",
                                 "/api/auth/login-user",
                                 "/api/auth/verify-user",
                                 "/api/auth/resend-verification",
                                 "/api/auth/request-password-reset",
-                                "/api/auth/reset-password"
+                                "/api/auth/reset-password",
+                                "/api/auth/google/signup",
+                                "/api/auth/google/signin"
                         ).permitAll()
 
-                        // PROTECTED endpoints
+                        // ── Auth protected ────────────────────────────────
                         .requestMatchers("/api/auth/update-profile/**").authenticated()
 
-                        // ADMIN + SERVICE access
-                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "SERVICE")
+                        // ── Preferences: USER (frontend) or SERVICE (scheduler) ──
+                        // /{userId}/preferences/** — called by todo-service scheduler
+                        .requestMatchers("/api/users/*/preferences/**").hasAnyRole("USER", "SERVICE")
+                        // /preferences/** — called by frontend user
+                        .requestMatchers("/api/users/preferences/**").hasAnyRole("USER", "SERVICE")
 
-                        // Todos (authenticated USER)
-                        .requestMatchers("/api/todos/**").authenticated()
+                        // ── Everything else under /api/users/** — ADMIN or SERVICE ──
+                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "SERVICE")
 
                         .anyRequest().authenticated()
                 )
-
-                // Set custom authentication provider
                 .authenticationProvider(authenticationProvider)
-
-                // Add JWT filter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -80,15 +79,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8082")); // frontend origin
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://localhost:8888"
+        ));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
 }

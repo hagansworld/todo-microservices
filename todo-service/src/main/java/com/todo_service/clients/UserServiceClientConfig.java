@@ -4,7 +4,7 @@ import com.todo_service.exception.NotFoundException;
 import com.todo_service.exception.UserServiceException;
 import com.todo_service.security.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -20,16 +20,15 @@ public class UserServiceClientConfig {
 
     private final JwtService jwtService;
 
+    @Value("${services.user-url}")
+    private String userServiceUrl;
+
     @Bean
     public UserServiceClient userServiceClient(
-            @Qualifier("loadBalancedRestClientBuilder")
-            RestClient.Builder restClientBuilder
-    ) {
+            RestClient.Builder restClientBuilder) {
 
         RestClient restClient = restClientBuilder
-                .baseUrl("http://user-service")
-
-                //  inject fresh JWT on EVERY request
+                .baseUrl(userServiceUrl)
                 .requestInterceptor((request, body, execution) -> {
                     request.getHeaders().set(
                             HttpHeaders.AUTHORIZATION,
@@ -37,7 +36,6 @@ public class UserServiceClientConfig {
                     );
                     return execution.execute(request, body);
                 })
-
                 .defaultStatusHandler(HttpStatusCode::is4xxClientError, (req, res) -> {
                     if (res.getStatusCode() == HttpStatus.NOT_FOUND) {
                         throw new NotFoundException("User Service: User not found");

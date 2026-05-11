@@ -1,5 +1,6 @@
 package com.todo_service.dto;
 
+import com.todo_service.entity.TodoCategory;
 import com.todo_service.entity.TodoPriority;
 import com.todo_service.entity.TodoStatus;
 import lombok.Data;
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 public class UpdateTodoRequestDto {
     private String title;
     private String description;
-    private String category;
+    private TodoCategory category;
     private TodoPriority priority;
     private LocalDateTime dueDate;
     private TodoStatus status;

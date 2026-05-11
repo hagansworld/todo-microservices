@@ -1,5 +1,6 @@
 package com.todo_service.clients;
 
+import com.todo_service.dto.NotificationPreferenceResponseDto;
 import com.todo_service.dto.ResponseDto;
 import com.todo_service.dto.UserResponseDto;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,9 +11,12 @@ import java.util.UUID;
 
 @HttpExchange("/api/users")
 public interface UserServiceClient {
+
     @GetExchange("/{id}")
     ResponseDto<UserResponseDto> getUserById(@PathVariable UUID id);
+
+    @GetExchange("/{userId}/preferences/notifications")
+    ResponseDto<NotificationPreferenceResponseDto> getUserNotificationPreferences(
+            @PathVariable UUID userId
+    );
 }
-
-
-

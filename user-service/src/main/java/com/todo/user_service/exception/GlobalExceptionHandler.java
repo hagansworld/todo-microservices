@@ -91,6 +91,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AccountNotVerifiedException.class)
+    public ResponseEntity<ResponseDto> handleAccountNotVerifiedException(AccountNotVerifiedException ex) {
+        ResponseDto errorResponse = ResponseDto.builder()
+                .statusCode(HttpStatus.FORBIDDEN.value())  // 403
+                .message(ex.getMessage())
+                .timeRequested(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseDto> handleValidationExceptions(MethodArgumentNotValidException ex) {
         // Collect all validation errors for fields

@@ -21,22 +21,22 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name="tbl_users")
+@Table(name = "tbl_users")
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     private String username;
 
-    @Column(name="full_name")
+    @Column(name = "full_name")
     private String fullName;
 
     @Column(unique = true, nullable = false)
     private String email;
 
-    // for now remove the unique, cause we will same number for all account
-    @Column(name="phone_number")
+    @Column(name = "phone_number")
     private String phoneNumber;
 
     private String password;
@@ -44,12 +44,21 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserRole role = UserRole.USER;
 
+    // Address kept for admin use only — removed from user-facing profile update
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "address_id" ,referencedColumnName = "id")
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
 
     @Enumerated(EnumType.STRING)
-    private UserStatus status = UserStatus.ACTIVE;
+    private UserStatus status = UserStatus.INACTIVE;
+
+    /**
+     * True once the user has set their fullName via the update-profile endpoint.
+     * Used by the frontend to decide whether to show the profile completion screen.
+     * OAuth users who provide a fullName via Google are marked complete automatically.
+     */
+    @Column(name = "profile_complete", nullable = false)
+    private boolean profileComplete = false;
 
     @Column(name = "verification_code")
     private String verificationCode;
@@ -63,45 +72,48 @@ public class User implements UserDetails {
     @Column(name = "password_reset_expires_at")
     private LocalDateTime passwordResetTokenExpiresAt;
 
+    // Google OAuth fields
+    @Column(name = "oauth_provider")
+    private String oauthProvider;
+
+    @Column(name = "oauth_provider_id")
+    private String oauthProviderId;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
+    @Column(name = "is_oauth_user")
+    private boolean oauthUser = false;
+
+    @Column(name="email_reminders_enabled",nullable = false)
+    private boolean emailRemindersEnabled = true;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    // Custom implementation of getAuthorities to return the role as GrantedAuthority
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
-    public String getUsername(){
-        return this.username;
-    }
+    public String getUsername() { return this.username; }
 
     @Override
-    public String  getPassword(){
-        return this.password;
-    }
+    public String getPassword() { return this.password; }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+    public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+    public boolean isAccountNonLocked() { return true; }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+    public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() {
-        return this.status==UserStatus.ACTIVE;
-    }
+    public boolean isEnabled() { return this.status == UserStatus.ACTIVE; }
 }

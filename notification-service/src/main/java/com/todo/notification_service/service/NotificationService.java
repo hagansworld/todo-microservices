@@ -5,302 +5,220 @@ import com.todo.notification_service.dto.TodoReminderRequestDto;
 import com.todo.notification_service.entity.*;
 import com.todo.notification_service.exception.EmailFailedException;
 import com.todo.notification_service.repository.EmailLogRepository;
-import com.todo.notification_service.repository.SmsLogRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class NotificationService {
 
     private final EmailTemplateService templateService;
     private final EmailSenderService senderService;
     private final EmailLogRepository emailLogRepository;
-    private final SmsTemplateService smsTemplateService;
-    private final SmsSenderService smsSenderService;
     private final VerificationCodeService verificationCodeService;
-    private final SmsLogRepository smsLogRepository;
+    private final String appUrl;
+
+    // Explicit constructor so @Value is injected correctly alongside final fields
+    public NotificationService(
+            EmailTemplateService templateService,
+            EmailSenderService senderService,
+            EmailLogRepository emailLogRepository,
+            VerificationCodeService verificationCodeService,
+            @Value("${tasktide.app-url:http://localhost:6061}") String appUrl
+    ) {
+        this.templateService = templateService;
+        this.senderService = senderService;
+        this.emailLogRepository = emailLogRepository;
+        this.verificationCodeService = verificationCodeService;
+        this.appUrl = appUrl;
+    }
 
     /* =========================
-     EMAIL NOTIFICATIONS
-     ========================= */
+       EMAIL NOTIFICATIONS
+       ========================= */
 
-    // Method to send verification email
+    // ── Verification ────────────────────────────────────────────────────────
+
     public String sendVerificationEmail(String email) {
 
-        //  Generate code
         String code = verificationCodeService.generateCode();
-
-         // Build HTML content from template
         String html = templateService.loadVerificationTemplate(code);
 
-        // Create a new email log entry for pending status
-        EmailLog log = new EmailLog();
-        log.setEmail(email);
-        log.setMessageType(MessageType.VERIFICATION);
-        log.setStatus(EmailStatus.PENDING);
+        EmailLog emailLog = buildPendingLog(email, MessageType.VERIFICATION);
 
-        // Attempt to send the email
         try {
-            senderService.sendHtmlEmail(
-                    email,
-                    "Verify Your TaskTide Account",
-                    html
-            );
-
-            // If the email is sent successfully, update the log status to SENT
-            log.setStatus(EmailStatus.SENT);
-            log.setSentTime(LocalDateTime.now());
-
+            senderService.sendHtmlEmail(email, "Verify Your TaskTide Account", html);
+            markSent(emailLog);
         } catch (Exception e) {
-            // If an error occurs, update the log status to FAILED and throw a custom exception
-            log.setStatus(EmailStatus.FAILED);
-
-            emailLogRepository.save(log);
-
-            // Throw a custom exception to indicate failure
+            log.error("Failed to send verification email to {}: {}", email, e.getMessage());
+            emailLog.setStatus(EmailStatus.FAILED);
+            emailLogRepository.save(emailLog);
             throw new EmailFailedException("Failed to send verification email");
         }
 
-        emailLogRepository.save(log);
-
-        // RETURN CODE (Auth service will save it)
+        emailLogRepository.save(emailLog);
         return code;
     }
 
+    // ── Welcome ──────────────────────────────────────────────────────────────
 
-    // Method to send Welcome email
     public void sendWelcomeEmail(String email) {
 
         String html = templateService.loadWelcomeTemplate();
-
-        EmailLog log = new EmailLog();
-        log.setEmail(email);
-        log.setMessageType(MessageType.WELCOME);
-        log.setStatus(EmailStatus.PENDING);
+        EmailLog emailLog = buildPendingLog(email, MessageType.WELCOME);
 
         try {
-            senderService.sendHtmlEmail(
-                    email,
-                    "Welcome to TaskTide 🎉",
-                    html
-            );
-
-            log.setStatus(EmailStatus.SENT);
-            log.setSentTime(LocalDateTime.now());
-
+            senderService.sendHtmlEmail(email, "Welcome to TaskTide 🎉", html);
+            markSent(emailLog);
         } catch (Exception e) {
-            log.setStatus(EmailStatus.FAILED);
-            emailLogRepository.save(log);
+            log.error("Failed to send welcome email to {}: {}", email, e.getMessage());
+            emailLog.setStatus(EmailStatus.FAILED);
+            emailLogRepository.save(emailLog);
             throw new EmailFailedException("Failed to send welcome email");
         }
 
-        emailLogRepository.save(log);
+        emailLogRepository.save(emailLog);
     }
 
+    // ── Password reset ───────────────────────────────────────────────────────
 
-    // Method to send password reset email
-    public void sendPasswordResetEmail(String email, String resetToken){
+    public void sendPasswordResetEmail(String email, String resetToken) {
 
-        // Construct the reset link with the token
-        String resetLink = "http://localhost:6061/reset-password?token=" + resetToken;
-
-        // Load the reset password template and replace placeholders
+        String resetLink = appUrl + "/reset-password?token=" + resetToken;
         String html = templateService.loadResetPasswordTemplate(resetLink);
 
-        // Create a new email log entry for pending status
-        EmailLog log = new EmailLog();
-        log.setEmail(email);
-        log.setMessageType(MessageType.PASSWORD_RESET);
-        log.setStatus(EmailStatus.PENDING);
+        EmailLog emailLog = buildPendingLog(email, MessageType.PASSWORD_RESET);
 
-        // Attempt to send the email
         try {
-            senderService.sendHtmlEmail(
-                    email,
-                    "Reset Your Password",
-                    html
-            );
-
-            // If the email is sent successfully, update the log status to SENT
-            log.setStatus(EmailStatus.SENT);
-            log.setSentTime(LocalDateTime.now());
-
+            senderService.sendHtmlEmail(email, "Reset Your Password", html);
+            markSent(emailLog);
         } catch (Exception e) {
-            // If an error occurs, update the log status to FAILED and throw a custom exception
-            log.setStatus(EmailStatus.FAILED);
-            emailLogRepository.save(log);
-
-            // Throw a custom exception to indicate failure
+            log.error("Failed to send password reset email to {}: {}", email, e.getMessage());
+            emailLog.setStatus(EmailStatus.FAILED);
+            emailLogRepository.save(emailLog);
             throw new EmailFailedException("Failed to send password reset email");
         }
 
-        emailLogRepository.save(log);
-
-    }
-     /* =========================
-         SMS NOTIFICATIONS
-         ========================= */
-    // method to send phone messages
-    public void sendAppointmentSms(
-            String phone,
-            String name,
-            String date,
-            String time
-    ) {
-        log.info("Sending appointment SMS to {}", phone);
-        String sms = smsTemplateService.appointmentReminder(name, date, time);
-
-        smsSenderService.sendSms(phone, sms);
+        emailLogRepository.save(emailLog);
     }
 
-    // Todo_reminder SMS
-    public void sendTodoReminderSms(TodoReminderRequestDto dto) {
+    // ── Todo reminder ────────────────────────────────────────────────────────
 
-        if (dto.getPhone() == null || dto.getPhone().isBlank()) {
-            log.warn(
-                    "Skipping TODO reminder SMS. Missing phone number for user={}, task={}",
-                    dto.getUserName(),
-                    dto.getTaskTitle()
-            );
+    public void sendTodoReminderEmail(TodoReminderRequestDto dto) {
 
-            SmsLog log = new SmsLog();
-            log.setPhone(null);
-            log.setMessageType(MessageType.TODO_REMINDER);
-            log.setStatus(SmsStatus.FAILED);
-            log.setSentTime(LocalDateTime.now());
-
-            smsLogRepository.save(log);
+        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+            log.warn("Skipping TODO reminder email — missing address for user={}, task={}",
+                    dto.getUserName(), dto.getTaskTitle());
+            saveFailedEmailLog(null, MessageType.TODO_REMINDER);
             return;
         }
 
-        SmsLog log = new SmsLog();
-        log.setPhone(dto.getPhone());
-        log.setMessageType(MessageType.TODO_REMINDER);
-        log.setStatus(SmsStatus.PENDING);
+        log.info("Sending TODO reminder email to {} for task='{}'", dto.getEmail(), dto.getTaskTitle());
+        log.info("DTO values — name='{}', dueDate='{}', priority='{}', appUrl='{}'",
+                dto.getUserName(), dto.getDueDate(), dto.getPriority(), appUrl);
+
+        EmailLog emailLog = buildPendingLog(dto.getEmail(), MessageType.TODO_REMINDER);
 
         try {
-            String sms = smsTemplateService.todoReminder(
+            String html = templateService.loadTodoReminderTemplate(
                     dto.getUserName(),
                     dto.getTaskTitle(),
                     dto.getDueDate(),
-                    dto.getPriority()
+                    dto.getPriority(),
+                    appUrl
             );
 
-            smsSenderService.sendSms(dto.getPhone(), sms);
+            senderService.sendHtmlEmail(
+                    dto.getEmail(),
+                    "Reminder: " + dto.getTaskTitle() + " is due soon",
+                    html
+            );
 
-            log.setStatus(SmsStatus.SENT);
-            log.setSentTime(LocalDateTime.now());
+            markSent(emailLog);
+            log.info("TODO reminder email sent successfully to {}", dto.getEmail());
 
         } catch (Exception e) {
-            log.setStatus(SmsStatus.FAILED);
+            log.error("Failed to send TODO reminder email — FULL ERROR:", e);
+            log.error("DTO dump: email={}, userName={}, taskTitle={}, dueDate={}, priority={}, appUrl={}",
+                    dto.getEmail(), dto.getUserName(), dto.getTaskTitle(),
+                    dto.getDueDate(), dto.getPriority(), appUrl);
+            emailLog.setStatus(EmailStatus.FAILED);
         }
 
-        smsLogRepository.save(log);
+        emailLogRepository.save(emailLog);
     }
 
+    // ── Todo overdue ─────────────────────────────────────────────────────────
 
-    // Todo_overdue_SMS
-    public void sendTodoOverdueSms(TodoOverdueRequestDto dto) {
+    public void sendTodoOverdueEmail(TodoOverdueRequestDto dto) {
 
-        // =====================
-        // GUARD: phone is required
-        // =====================
-        if (dto.getPhone() == null || dto.getPhone().isBlank()) {
-
-            log.warn(
-                    "Skipping TODO overdue SMS. Missing phone number for user={}, task={}",
-                    dto.getUserName(),
-                    dto.getTaskTitle()
-            );
-
-            SmsLog logEntry = new SmsLog();
-            logEntry.setPhone(null);
-            logEntry.setMessageType(MessageType.TODO_OVERDUE);
-            logEntry.setStatus(SmsStatus.FAILED);
-            logEntry.setSentTime(LocalDateTime.now());
-
-            smsLogRepository.save(logEntry);
+        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+            log.warn("Skipping TODO overdue email — missing address for user={}, task={}",
+                    dto.getUserName(), dto.getTaskTitle());
+            saveFailedEmailLog(null, MessageType.TODO_OVERDUE);
             return;
         }
 
-        log.info("Sending TODO overdue SMS to {}", dto.getPhone());
+        log.info("Sending TODO overdue email to {} for task='{}'", dto.getEmail(), dto.getTaskTitle());
+        log.info("DTO values — name='{}', dueDate='{}', appUrl='{}'",
+                dto.getUserName(), dto.getDueDate(), appUrl);
 
-        SmsLog logEntry = new SmsLog();
-        logEntry.setPhone(dto.getPhone());
-        logEntry.setMessageType(MessageType.TODO_OVERDUE);
-        logEntry.setStatus(SmsStatus.PENDING);
-        smsLogRepository.save(logEntry);
+        EmailLog emailLog = buildPendingLog(dto.getEmail(), MessageType.TODO_OVERDUE);
 
         try {
-            String sms = smsTemplateService.todoOverdue(
+            String html = templateService.loadTodoOverdueTemplate(
                     dto.getUserName(),
                     dto.getTaskTitle(),
-                    dto.getDueDate()
+                    dto.getDueDate(),
+                    appUrl
             );
 
-            smsSenderService.sendSms(dto.getPhone(), sms);
+            senderService.sendHtmlEmail(
+                    dto.getEmail(),
+                    "Task Overdue: " + dto.getTaskTitle(),
+                    html
+            );
 
-            logEntry.setStatus(SmsStatus.SENT);
-            logEntry.setSentTime(LocalDateTime.now());
+            markSent(emailLog);
+            log.info("TODO overdue email sent successfully to {}", dto.getEmail());
 
         } catch (Exception e) {
-            log.error(
-                    "Failed to send TODO overdue SMS to {}: {}",
-                    dto.getPhone(),
-                    e.getMessage()
-            );
-            logEntry.setStatus(SmsStatus.FAILED);
+            log.error("Failed to send TODO overdue email — FULL ERROR:", e);
+            log.error("DTO dump: email={}, userName={}, taskTitle={}, dueDate={}, appUrl={}",
+                    dto.getEmail(), dto.getUserName(), dto.getTaskTitle(),
+                    dto.getDueDate(), appUrl);
+            emailLog.setStatus(EmailStatus.FAILED);
         }
 
-        smsLogRepository.save(logEntry);
+        emailLogRepository.save(emailLog);
     }
 
+    /* =========================
+       PRIVATE HELPERS
+       ========================= */
 
+    private EmailLog buildPendingLog(String email, MessageType type) {
+        EmailLog emailLog = new EmailLog();
+        emailLog.setEmail(email);
+        emailLog.setMessageType(type);
+        emailLog.setStatus(EmailStatus.PENDING);
+        return emailLog;
+    }
 
+    private void markSent(EmailLog emailLog) {
+        emailLog.setStatus(EmailStatus.SENT);
+        emailLog.setSentTime(LocalDateTime.now());
+    }
 
-
-//    // Method to send verification email
-//    public void sendVerificationEmail(String email, String code) {
-//
-//        // Build HTML content from template
-//        String html = templateService.loadVerificationTemplate(code);
-//
-//        // Create a new email log entry for default status
-//        EmailLog emailLoglog  = new EmailLog();
-//        emailLoglog.setEmail(email);
-//        emailLoglog.setMessageType(MessageType.VERIFICATION);
-//        emailLoglog.setStatus(EmailStatus.PENDING);
-//
-//        try {
-//            // Attempt to send the email
-//            senderService.sendHtmlEmail(
-//                    email,
-//                    "Verify Your Medicare Health Account",
-//                    html
-//            );
-//
-//            // If the email is sent successfully, update the log status to SENT
-//            emailLoglog.setStatus(EmailStatus.SENT);
-//
-//            emailLoglog.setSentTime(LocalDateTime.now());
-//
-//        } catch (Exception e) {
-//            // If an error occurs, update the log status to FAILED and throw a custom exception
-//            emailLoglog.setStatus(EmailStatus.FAILED);
-//            emailLogRepository.save(emailLoglog);
-//
-//            // Throw a custom exception to indicate failure
-//            throw new EmailFailedException("Failed to send verification email: " + e.getMessage());
-//        }
-//
-//        // Save the email log (whether sent or failed)
-//        emailLogRepository.save(emailLoglog);
-//    }
-
-
+    private void saveFailedEmailLog(String email, MessageType type) {
+        EmailLog emailLog = new EmailLog();
+        emailLog.setEmail(email);
+        emailLog.setMessageType(type);
+        emailLog.setStatus(EmailStatus.FAILED);
+        emailLog.setSentTime(LocalDateTime.now());
+        emailLogRepository.save(emailLog);
+    }
 }

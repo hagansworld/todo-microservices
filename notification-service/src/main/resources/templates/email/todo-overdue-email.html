@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Overdue — TaskTide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #F4F1EC;
+            font-family: 'DM Sans', Helvetica, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .shell {
+            max-width: 600px;
+            margin: 48px auto;
+            padding: 0 16px 48px;
+        }
+
+        /* ── Brand bar ── */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 0 28px;
+        }
+        .brand-dot {
+            width: 10px; height: 10px;
+            background: #1A6B5A;
+            border-radius: 50%;
+        }
+        .brand-name {
+            font-family: 'DM Serif Display', Georgia, serif;
+            font-size: 22px;
+            color: #1A1A1A;
+            letter-spacing: -0.3px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 24px rgba(0,0,0,0.07);
+        }
+
+        /* ── Hero strip — warm amber/red for overdue ── */
+        .hero {
+            background: #2C1A1A;
+            padding: 44px 44px 36px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50px; right: -30px;
+            width: 200px; height: 200px;
+            background: rgba(196,58,42,0.12);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -40px; left: 80px;
+            width: 100px; height: 100px;
+            background: rgba(196,58,42,0.08);
+            border-radius: 50%;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(196,58,42,0.2);
+            border: 1px solid rgba(196,58,42,0.35);
+            border-radius: 100px;
+            padding: 5px 14px 5px 10px;
+            margin-bottom: 20px;
+        }
+        .hero-eyebrow-dot {
+            width: 7px; height: 7px;
+            background: #E05C47;
+            border-radius: 50%;
+        }
+        .hero-eyebrow-text {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            color: #E8897A;
+        }
+
+        .hero-title {
+            font-family: 'DM Serif Display', Georgia, serif;
+            font-size: 36px;
+            color: #FFFFFF;
+            line-height: 1.12;
+            letter-spacing: -0.5px;
+        }
+        .hero-title em {
+            font-style: italic;
+            color: #E8897A;
+        }
+
+        /* ── Body ── */
+        .body {
+            padding: 40px 44px;
+        }
+
+        .greeting {
+            font-size: 16px;
+            color: #555;
+            font-weight: 400;
+            margin-bottom: 28px;
+            line-height: 1.65;
+        }
+        .greeting strong { color: #1A1A1A; font-weight: 600; }
+
+        /* ── Overdue task block ── */
+        .task-block {
+            border: 1.5px solid #F2D8D4;
+            background: #FEF8F7;
+            border-radius: 14px;
+            padding: 26px 28px;
+            margin-bottom: 10px;
+        }
+        .task-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #C4533A;
+            margin-bottom: 10px;
+        }
+        .task-title {
+            font-family: 'DM Serif Display', Georgia, serif;
+            font-size: 22px;
+            color: #1A1A1A;
+            margin-bottom: 18px;
+            line-height: 1.2;
+        }
+
+        .overdue-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: #FEE8E4;
+            border: 1px solid #F2C4BC;
+            border-radius: 100px;
+            padding: 5px 14px 5px 10px;
+            margin-bottom: 18px;
+        }
+        .overdue-pill-dot {
+            width: 6px; height: 6px;
+            background: #C4533A;
+            border-radius: 50%;
+        }
+        .overdue-pill-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: #C4533A;
+            letter-spacing: 0.2px;
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .meta-icon { width: 15px; height: 15px; flex-shrink: 0; }
+        .meta-text { font-size: 13px; color: #777; font-weight: 500; }
+
+        /* ── Divider ── */
+        .section-divider {
+            height: 1px;
+            background: #EEE;
+            margin: 28px 0;
+        }
+
+        /* ── Action note ── */
+        .action-note {
+            font-size: 15px;
+            color: #333;
+            line-height: 1.65;
+            margin-bottom: 28px;
+            font-weight: 400;
+        }
+        .action-note strong { color: #1A1A1A; font-weight: 600; }
+
+        /* ── CTA ── */
+        .cta-wrap {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .cta-btn {
+            display: inline-block;
+            background: #2C1A1A;
+            color: #ffffff !important;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            padding: 15px 40px;
+            border-radius: 100px;
+        }
+
+        .dismiss-note {
+            font-size: 13px;
+            color: #AAA;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .dismiss-note a { color: #1A6B5A; text-decoration: none; }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 36px;
+            text-align: center;
+        }
+        .footer-divider {
+            width: 40px; height: 1px;
+            background: #D8D3CB;
+            margin: 0 auto 18px;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #AAA;
+            line-height: 1.7;
+        }
+        .footer-text a { color: #1A6B5A; text-decoration: none; }
+
+        @media (max-width: 520px) {
+            .hero { padding: 32px 28px 28px; }
+            .hero-title { font-size: 28px; }
+            .body { padding: 28px 24px; }
+            .task-block { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+
+    <!-- Brand -->
+    <div class="brand">
+        <div class="brand-dot"></div>
+        <span class="brand-name">TaskTide</span>
+    </div>
+
+    <div class="card">
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-eyebrow">
+                <div class="hero-eyebrow-dot"></div>
+                <span class="hero-eyebrow-text">Action Required</span>
+            </div>
+            <h1 class="hero-title">This task is<br><em>past its due date.</em></h1>
+        </div>
+
+        <!-- Body -->
+        <div class="body">
+
+            <p class="greeting">
+                Hi <strong>{{NAME}}</strong>, one of your tasks has passed its due date
+                without being marked complete. It may still need your attention.
+            </p>
+
+            <!-- Task block -->
+            <div class="task-block">
+                <p class="task-label">Overdue Task</p>
+                <p class="task-title">{{TASK_TITLE}}</p>
+
+                <div class="overdue-pill">
+                    <div class="overdue-pill-dot"></div>
+                    <span class="overdue-pill-text">Was due {{DUE_DATE}}</span>
+                </div>
+
+                <div class="meta-row">
+                    <svg class="meta-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="8" cy="8" r="6.5" stroke="#AAA" stroke-width="1.3"/>
+                        <path d="M8 5v3.5l2 1.5" stroke="#AAA" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="meta-text">This task has not been completed</span>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <p class="action-note">
+                Take a moment to <strong>complete, reschedule, or delete</strong> this task
+                so your list stays clean and focused. Overdue tasks can pile up fast —
+                a quick action now keeps you in control.
+            </p>
+
+            <!-- CTA -->
+            <div class="cta-wrap">
+                <a href="{{APP_URL}}" class="cta-btn">Resolve Task →</a>
+            </div>
+
+            <p class="dismiss-note">
+                Already handled it? <a href="{{APP_URL}}">Mark it done in the app</a>
+                and we'll stop sending reminders for this task.
+            </p>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-divider"></div>
+        <p class="footer-text">
+            © {{YEAR}} TaskTide. All rights reserved.<br>
+            You're receiving this because overdue alerts are enabled on your account.<br>
+
+        </p>
+    </div>
+
+</div>
+</body>
+</html>

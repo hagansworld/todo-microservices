@@ -2,7 +2,7 @@ package com.todo.user_service.clients;
 
 import com.todo.user_service.exception.NotFoundException;
 import com.todo.user_service.exception.NotificationServiceException;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -14,11 +14,18 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 @Configuration
 public class NotificationServiceClientConfig {
 
+    // Pulled from application.yaml:
+    //   services.notification-url: http://localhost:6062        (dev)
+    //   services.notification-url: ${NOTIFICATION_SERVICE_URL}  (prod)
+    @Value("${services.notification-url}")
+    private String notificationServiceUrl;
+
     @Bean
     public NotificationServiceClient notificationServiceClient(
-            @Qualifier("loadBalancedRestClientBuilder") RestClient.Builder restClientBuilder) {
+            RestClient.Builder restClientBuilder) {   // plain builder — no @LoadBalanced
 
-        RestClient restClient = restClientBuilder.baseUrl("http://notification-service")
+        RestClient restClient = restClientBuilder
+                .baseUrl(notificationServiceUrl)      // direct URL, not Eureka service name
                 .defaultStatusHandler(HttpStatusCode::is4xxClientError, (request, response) -> {
                     if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
                         throw new NotFoundException("Notification Service: Not Found");

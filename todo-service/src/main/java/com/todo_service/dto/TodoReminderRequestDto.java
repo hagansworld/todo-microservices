@@ -4,9 +4,8 @@ import lombok.Data;
 
 @Data
 public class TodoReminderRequestDto {
-    private String phone;
+    private String email;       // ← was phone
     private String userName;
-
     private String taskTitle;
     private String dueDate;
     private String priority;

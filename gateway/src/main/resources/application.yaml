@@ -1,0 +1,141 @@
+# ════════════════════════════════════════════
+# GATEWAY — application.yaml
+# ════════════════════════════════════════════
+
+# ─── default (dev) ───────────────────────────────────────────────────────────
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: [GET, POST, PUT, DELETE, PATCH, OPTIONS]
+            allowedHeaders: "*"
+            allowCredentials: false
+      routes:
+
+        # User Service — auth routes
+        - id: auth-service
+          uri: http://localhost:6061
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RewritePath=/auth(?<segment>/?.*), /api/auth${segment}
+
+        # User Service — notification preferences (USER role)
+        # MUST be before user-service catch-all so it isn't blocked by ADMIN/SERVICE rule
+        - id: user-preferences
+          uri: http://localhost:6061
+          predicates:
+            - Path=/users/preferences/**
+          filters:
+            - RewritePath=/users(?<segment>/?.*), /api/users${segment}
+
+        # User Service — user routes (ADMIN/SERVICE)
+        - id: user-service
+          uri: http://localhost:6061
+          predicates:
+            - Path=/users/**
+          filters:
+            - RewritePath=/users(?<segment>/?.*), /api/users${segment}
+
+        # Notification Service
+        - id: notification-service
+          uri: http://localhost:6062
+          predicates:
+            - Path=/notifications/**
+          filters:
+            - RewritePath=/notifications(?<segment>/?.*), /api/notifications${segment}
+
+        # Todos Service
+        - id: todo-service
+          uri: http://localhost:6063
+          predicates:
+            - Path=/todos/**
+          filters:
+            - RewritePath=/todos(?<segment>/?.*), /api/todos${segment}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.server: DEBUG
+    reactor.netty: INFO
+    com.todo: DEBUG
+
+server:
+  port: 8888
+
+---
+# ─── prod ────────────────────────────────────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns:
+              - "${FRONTEND_URL}"
+            allowedMethods: [GET, POST, PUT, DELETE, PATCH, OPTIONS]
+            allowedHeaders: "*"
+            allowCredentials: false
+            maxAge: 3600
+      routes:
+
+        # User Service — auth routes
+        - id: auth-service
+          uri: ${USER_SERVICE_URL}
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RewritePath=/auth(?<segment>/?.*), /api/auth${segment}
+
+        # User Service — notification preferences (USER role)
+        # MUST be before user-service catch-all
+        - id: user-preferences
+          uri: ${USER_SERVICE_URL}
+          predicates:
+            - Path=/users/preferences/**
+          filters:
+            - RewritePath=/users(?<segment>/?.*), /api/users${segment}
+
+        # User Service — user routes (ADMIN/SERVICE)
+        - id: user-service
+          uri: ${USER_SERVICE_URL}
+          predicates:
+            - Path=/users/**
+          filters:
+            - RewritePath=/users(?<segment>/?.*), /api/users${segment}
+
+        # Notification Service
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL}
+          predicates:
+            - Path=/notifications/**
+          filters:
+            - RewritePath=/notifications(?<segment>/?.*), /api/notifications${segment}
+
+        # Todos Service
+        - id: todo-service
+          uri: ${TODO_SERVICE_URL}
+          predicates:
+            - Path=/todos/**
+          filters:
+            - RewritePath=/todos(?<segment>/?.*), /api/todos${segment}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty.http.server: INFO
+    reactor.netty: WARN
+    com.todo: INFO
+
+server:
+  port: ${SERVER_PORT:8888}

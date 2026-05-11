@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Reminder — TaskTide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #F4F1EC;
+            font-family: 'DM Sans', Helvetica, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .shell {
+            max-width: 600px;
+            margin: 48px auto;
+            padding: 0 16px 48px;
+        }
+
+        /* ── Brand bar ── */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 0 28px;
+        }
+        .brand-dot {
+            width: 10px; height: 10px;
+            background: #1A6B5A;
+            border-radius: 50%;
+        }
+        .brand-name {
+            font-family: 'DM Serif Display', Georgia, serif;
+            font-size: 22px;
+            color: #1A1A1A;
+            letter-spacing: -0.3px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 24px rgba(0,0,0,0.07);
+        }
+
+        /* ── Hero strip ── */
+        .hero {
+            background: #1A6B5A;
+            padding: 44px 44px 36px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 180px; height: 180px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; right: 60px;
+            width: 120px; height: 120px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+        .hero-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.55);
+            margin-bottom: 12px;
+        }
+        .hero-title {
+            font-family: 'DM Serif Display', Georgia, serif;
+            font-size: 34px;
+            color: #FFFFFF;
+            line-height: 1.15;
+            letter-spacing: -0.5px;
+        }
+        .hero-title em {
+            font-style: italic;
+            color: #A8D8C8;
+        }
+
+        /* ── Body ── */
+        .body {
+            padding: 40px 44px;
+        }
+
+        .greeting {
+            font-size: 16px;
+            color: #555;
+            font-weight: 400;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+        .greeting strong {
+            color: #1A1A1A;
+            font-weight: 600;
+        }
+
+        /* ── Task card ── */
+        .task-block {
+            background: #F9F7F4;
+            border: 1.5px solid #EAE6DF;
+            border-radius: 14px;
+            padding: 26px 28px;
+            margin-bottom: 28px;
+        }
+        .task-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        .task-title {
+            font-family: 'DM Serif Display', Georgia, serif;
+            font-size: 22px;
+            color: #1A1A1A;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .meta-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-chip {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .meta-icon {
+            width: 16px; height: 16px;
+            flex-shrink: 0;
+        }
+        .meta-text {
+            font-size: 13px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* ── Priority badge ── */
+        .priority-badge {
+            display: inline-block;
+            padding: 3px 11px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .priority-high   { background: #FEE9E7; color: #C0392B; }
+        .priority-medium { background: #FEF3E2; color: #B7770D; }
+        .priority-low    { background: #E8F5F0; color: #1A6B5A; }
+
+        /* ── CTA ── */
+        .cta-wrap {
+            text-align: center;
+            margin: 8px 0 32px;
+        }
+        .cta-btn {
+            display: inline-block;
+            background: #1A6B5A;
+            color: #ffffff !important;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            padding: 14px 36px;
+            border-radius: 100px;
+        }
+
+        /* ── Note ── */
+        .note {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 36px;
+            text-align: center;
+        }
+        .footer-divider {
+            width: 40px; height: 1px;
+            background: #D8D3CB;
+            margin: 0 auto 18px;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #AAA;
+            line-height: 1.7;
+        }
+        .footer-text a {
+            color: #1A6B5A;
+            text-decoration: none;
+        }
+
+        @media (max-width: 520px) {
+            .hero { padding: 32px 28px 28px; }
+            .hero-title { font-size: 26px; }
+            .body { padding: 28px 24px; }
+            .task-block { padding: 20px; }
+            .meta-row { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+
+    <!-- Brand -->
+    <div class="brand">
+        <div class="brand-dot"></div>
+        <span class="brand-name">TaskTide</span>
+    </div>
+
+    <div class="card">
+
+        <!-- Hero -->
+        <div class="hero">
+            <p class="hero-label">Task Reminder</p>
+            <h1 class="hero-title">You have a task<br><em>coming up.</em></h1>
+        </div>
+
+        <!-- Body -->
+        <div class="body">
+
+            <p class="greeting">
+                Hi <strong>{{NAME}}</strong>, just a heads-up — one of your tasks is due soon.
+                Stay ahead of it and keep your momentum going.
+            </p>
+
+            <!-- Task block -->
+            <div class="task-block">
+                <p class="task-label">Your Task</p>
+                <p class="task-title">{{TASK_TITLE}}</p>
+
+                <div class="meta-row">
+                    <div class="meta-chip">
+                        <!-- Calendar icon -->
+                        <svg class="meta-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="#888" stroke-width="1.3"/>
+                            <path d="M5 1v3M11 1v3M1.5 6.5h13" stroke="#888" stroke-width="1.3" stroke-linecap="round"/>
+                        </svg>
+                        <span class="meta-text">Due {{DUE_DATE}}</span>
+                    </div>
+                    <div class="meta-chip">
+                        <!-- Flag icon -->
+                        <svg class="meta-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 2v12M3 2h8l-2 4 2 4H3" stroke="#888" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="meta-text">
+              Priority:&nbsp;
+                            <!-- HIGH -->
+                            <!--<span class="priority-badge priority-high">HIGH</span>-->
+                            <!-- MEDIUM -->
+                            <!--<span class="priority-badge priority-medium">MEDIUM</span>-->
+                            <!-- LOW -->
+              <span class="priority-badge priority-{{PRIORITY_CLASS}}">{{PRIORITY}}</span>
+            </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="cta-wrap">
+                <a href="{{APP_URL}}" class="cta-btn">Open TaskTide →</a>
+            </div>
+
+            <p class="note">
+                If you've already completed this task, you can mark it as done<br>
+                inside the app and we'll stop sending reminders.
+            </p>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-divider"></div>
+        <p class="footer-text">
+            © {{YEAR}} TaskTide. All rights reserved.<br>
+            You're receiving this because task reminders are enabled on your account.<br>
+
+        </p>
+    </div>
+
+</div>
+</body>
+</html>

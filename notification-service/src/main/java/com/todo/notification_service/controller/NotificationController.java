@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(
         name = "Notification Service",
-        description = "Email and SMS notification operations"
+        description = "Email notification operations"
 )
 @RestController
 @RequiredArgsConstructor
@@ -48,13 +48,8 @@ public class NotificationController {
             @RequestBody WelcomeEmailRequestDto request
     ) {
         notificationService.sendWelcomeEmail(request.getEmail());
-
         return ResponseEntity.ok(
-                ApiResponse.buildResponse(
-                        null,
-                        HttpStatus.OK.value(),
-                        "Welcome email sent successfully"
-                )
+                ApiResponse.buildResponse(null, HttpStatus.OK.value(), "Welcome email sent successfully")
         );
     }
 
@@ -66,83 +61,37 @@ public class NotificationController {
     public ResponseEntity<ResponseDto> sendPasswordResetEmail(
             @RequestBody PasswordResetEmailRequestDto request
     ) {
-        notificationService.sendPasswordResetEmail(
-                request.getEmail(),
-                request.getResetToken()
-        );
-
+        notificationService.sendPasswordResetEmail(request.getEmail(), request.getResetToken());
         return ResponseEntity.ok(
-                ApiResponse.buildResponse(
-                        null,
-                        HttpStatus.OK.value(),
-                        "Password reset email sent successfully"
-                )
-        );
-    }
-
-    /* =========================
-        SMS ENDPOINTS
-       ========================= */
-
-    @Operation(
-            summary = "Send appointment SMS",
-            description = "Send an SMS notification for an appointment reminder"
-    )
-    @PostMapping("/appointment-sms")
-    public ResponseEntity<ResponseDto> sendAppointmentSms(
-            @RequestBody AppointmentSmsRequestDto request
-    ) {
-        notificationService.sendAppointmentSms(
-                request.getPhone(),
-                request.getName(),
-                request.getDate(),
-                request.getTime()
-        );
-
-        return ResponseEntity.ok(
-                ApiResponse.buildResponse(
-                        null,
-                        HttpStatus.OK.value(),
-                        "Appointment SMS sent successfully"
-                )
+                ApiResponse.buildResponse(null, HttpStatus.OK.value(), "Password reset email sent successfully")
         );
     }
 
     @Operation(
-            summary = "Send todo reminder SMS",
-            description = "Send an SMS reminder for a scheduled todo task"
+            summary = "Send todo reminder email",
+            description = "Send an email reminder for a scheduled todo task"
     )
-    @PostMapping("/todo-reminder-sms")
-    public ResponseEntity<ResponseDto> sendTodoReminderSms(
+    @PostMapping("/todo-reminder-email")
+    public ResponseEntity<ResponseDto> sendTodoReminderEmail(
             @RequestBody TodoReminderRequestDto request
     ) {
-        notificationService.sendTodoReminderSms(request);
-
+        notificationService.sendTodoReminderEmail(request);
         return ResponseEntity.ok(
-                ApiResponse.buildResponse(
-                        null,
-                        HttpStatus.OK.value(),
-                        "Todo reminder SMS sent successfully"
-                )
+                ApiResponse.buildResponse(null, HttpStatus.OK.value(), "Todo reminder email sent successfully")
         );
     }
 
     @Operation(
-            summary = "Send overdue todo SMS",
-            description = "Send an SMS notification for overdue todo tasks"
+            summary = "Send overdue todo email",
+            description = "Send an email notification for overdue todo tasks"
     )
-    @PostMapping("/todo-overdue-sms")
-    public ResponseEntity<ResponseDto> sendTodoOverdueSms(
+    @PostMapping("/todo-overdue-email")
+    public ResponseEntity<ResponseDto> sendTodoOverdueEmail(
             @RequestBody TodoOverdueRequestDto request
     ) {
-        notificationService.sendTodoOverdueSms(request);
-
+        notificationService.sendTodoOverdueEmail(request);
         return ResponseEntity.ok(
-                ApiResponse.buildResponse(
-                        null,
-                        HttpStatus.OK.value(),
-                        "Todo overdue SMS sent successfully"
-                )
+                ApiResponse.buildResponse(null, HttpStatus.OK.value(), "Todo overdue email sent successfully")
         );
     }
 }

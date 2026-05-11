@@ -33,7 +33,8 @@ public class Todo {
 
     private String description;
 
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private TodoCategory category;
 
     @Enumerated(EnumType.STRING)
     private TodoPriority priority;

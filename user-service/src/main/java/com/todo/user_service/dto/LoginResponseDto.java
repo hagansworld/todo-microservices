@@ -13,7 +13,8 @@ import java.util.UUID;
         "phoneNumber",
         "role",
         "token",
-        "refreshToken"
+        "refreshToken",
+        "profileComplete"
 })
 @Data
 public class LoginResponseDto {
@@ -23,4 +24,9 @@ public class LoginResponseDto {
     private UserRole role;
     private String token;
     private String refreshToken;
+    /**
+     * False if the user has never set their fullName.
+     * Frontend should redirect to /complete-profile when this is false.
+     */
+    private boolean profileComplete;
 }

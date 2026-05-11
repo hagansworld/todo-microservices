@@ -17,7 +17,7 @@ public class EmailSenderService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        helper.setFrom("TaskTide <support@tasktide.com>");
+        helper.setFrom("TaskTide <hagan2842@gmail.com>");
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(html, true);

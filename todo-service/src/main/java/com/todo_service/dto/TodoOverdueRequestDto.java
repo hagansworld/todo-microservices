@@ -4,11 +4,9 @@ import lombok.Data;
 
 @Data
 public class TodoOverdueRequestDto {
-    private String phone;
+    private String email;       // ← was phone
     private String userName;
-
     private String taskTitle;
     private String dueDate;
-
     private String priority;
 }
