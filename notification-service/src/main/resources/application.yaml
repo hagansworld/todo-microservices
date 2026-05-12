@@ -80,6 +80,7 @@ spring:
     password: ${TODO_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+
   jpa:
     hibernate:
       ddl-auto: update
