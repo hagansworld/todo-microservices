@@ -68,6 +68,8 @@ public class SecurityConfig {
                         // ── Everything else under /api/users/** — ADMIN or SERVICE ──
                         .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "SERVICE")
 
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider)
@@ -81,7 +83,10 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "http://localhost:8888"
+                "http://localhost:8888",
+                "https://task-tide-gateway-service.onrender.com"
+                // add your frontend URL here when deployed
+
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
