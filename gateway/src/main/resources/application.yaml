@@ -27,7 +27,6 @@ spring:
             - RewritePath=/auth(?<segment>/?.*), /api/auth${segment}
 
         # User Service — notification preferences (USER role)
-        # MUST be before user-service catch-all so it isn't blocked by ADMIN/SERVICE rule
         - id: user-preferences
           uri: http://localhost:6061
           predicates:
@@ -58,6 +57,12 @@ spring:
             - Path=/todos/**
           filters:
             - RewritePath=/todos(?<segment>/?.*), /api/todos${segment}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
 
 logging:
   level:
@@ -98,7 +103,6 @@ spring:
             - RewritePath=/auth(?<segment>/?.*), /api/auth${segment}
 
         # User Service — notification preferences (USER role)
-        # MUST be before user-service catch-all
         - id: user-preferences
           uri: ${USER_SERVICE_URL}
           predicates:
@@ -129,6 +133,12 @@ spring:
             - Path=/todos/**
           filters:
             - RewritePath=/todos(?<segment>/?.*), /api/todos${segment}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
 
 logging:
   level:
