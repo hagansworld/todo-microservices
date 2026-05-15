@@ -145,4 +145,22 @@ public class TodoController {
                 )
         );
     }
+
+
+    @Operation(
+            summary = "Permanently delete todo",
+            description = "Permanently delete a todo from trash. Cannot be recovered."
+    )
+    @DeleteMapping("/delete-forever/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ResponseDto<Void>> deleteTodoPermanently(@PathVariable UUID id) {
+        todoService.deleteTodo(id);
+        return ResponseEntity.ok(
+                ApiResponse.buildResponse(
+                        null,
+                        200,
+                        "Todo permanently deleted"
+                )
+        );
+    }
 }

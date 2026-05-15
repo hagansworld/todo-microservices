@@ -5,6 +5,7 @@ import com.todo_service.entity.TodoCategory;
 import com.todo_service.entity.TodoPriority;
 import com.todo_service.entity.TodoStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -61,6 +62,11 @@ public interface TodoRepository extends JpaRepository<Todo, UUID> {
             @Param("dueAfter")  LocalDateTime dueAfter
     );
 
+    // permanent delete — only allowed if already soft-deleted
+    @Modifying
+    @Query("DELETE FROM Todo t WHERE t.id = :id AND t.userId = :userId AND t.isDeleted = true")
+    void permanentDelete(@Param("id") UUID id, @Param("userId") UUID userId);
 
 
+    Optional<Todo> findByIdAndUserIdAndIsDeletedTrue(UUID id, UUID userId);
 }

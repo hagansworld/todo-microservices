@@ -159,4 +159,20 @@ public class TodoService {
         todo.setDeletedAt(LocalDateTime.now());
         return todoMapper.todoResponseDto(todoRepository.save(todo));
     }
+
+    /**
+     * Permanently delete a todos (only if already soft-deleted)
+     * @param id - the id of the todos
+     * @author - Isaac Hagan
+     */
+    @Transactional
+    public void deleteTodo(UUID id) {
+        UUID userId = JwtUtils.getCurrentUserId();
+        // must exist in trash first
+        todoRepository.findByIdAndUserIdAndIsDeletedTrue(id, userId)
+                .orElseThrow(() -> new NotFoundException("Todo not found in trash"));
+
+        todoRepository.permanentDelete(id, userId);
+        log.info("Todo permanently deleted — id={}, userId={}", id, userId);
+    }
 }
