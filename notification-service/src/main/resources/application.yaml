@@ -20,17 +20,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
 
-  mail:
-    host: smtp.gmail.com
-    port: 587                          # ← was 465 (SSL/blocked by Render); 587 uses STARTTLS
-    username: ${SUPPORT_EMAIL}
-    password: ${APP_PASSWORD}
-    properties:
-      mail.smtp.auth: true
-      mail.smtp.ssl.enable: false      # ← disable implicit SSL (was true)
-      mail.smtp.starttls.enable: true  # ← enable STARTTLS upgrade on 587
-      mail.smtp.starttls.required: true
-      mail.smtp.ssl.trust: smtp.gmail.com
+# ── Resend (replaces JavaMailSender — no SMTP ports, works on Render free tier) ──
+resend:
+  api-key: ${RESEND_API_KEY}
+  from-address: ${RESEND_FROM_ADDRESS:onboarding@resend.dev}
 
 tasktide:
   app-url: http://localhost:6061
@@ -48,7 +41,6 @@ logging:
   level:
     com.todo.notification_service: DEBUG
     org.springframework.web: DEBUG
-    org.springframework.mail: DEBUG
 
 server:
   port: 6062
@@ -80,17 +72,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
 
-  mail:
-    host: smtp.gmail.com
-    port: 587                          # ← was 465 (SSL/blocked by Render); 587 uses STARTTLS
-    username: ${SUPPORT_EMAIL}
-    password: ${APP_PASSWORD}
-    properties:
-      mail.smtp.auth: true
-      mail.smtp.ssl.enable: false      # ← disable implicit SSL
-      mail.smtp.starttls.enable: true  # ← enable STARTTLS upgrade on 587
-      mail.smtp.starttls.required: true
-      mail.smtp.ssl.trust: smtp.gmail.com
+resend:
+  api-key: ${RESEND_API_KEY}
+  from-address: ${RESEND_FROM_ADDRESS:onboarding@resend.dev}
 
 tasktide:
   app-url: ${TASKTIDE_APP_URL}
@@ -108,7 +92,6 @@ logging:
   level:
     com.todo.notification_service: INFO
     org.springframework.web: INFO
-    org.springframework.mail: INFO
 
 server:
   port: ${SERVER_PORT:6062}
