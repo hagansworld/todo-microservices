@@ -200,7 +200,7 @@ public class AuthService {
             user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
             userRepository.save(user);
             log.info("New verification code resent to '{}'", user.getEmail());
-            return userMapper.resendVerificationResponse(true, "Verification code resent successfully");
+            return userMapper.resendVerificationResponse(true, "Verification code resent successfully", user.getId());
         } catch (Exception e) {
             throw new EmailSendFailedException("Failed to resend verification email: " + e.getMessage());
         }

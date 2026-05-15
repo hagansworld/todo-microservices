@@ -5,6 +5,8 @@ import com.todo.user_service.entity.Address;
 import com.todo.user_service.entity.User;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class UserMapper {
 
@@ -127,10 +129,12 @@ public class UserMapper {
         return response;
     }
 
-    public ResendVerificationResponseDto resendVerificationResponse(boolean sent, String message) {
+
+    public ResendVerificationResponseDto resendVerificationResponse(boolean sent, String message, UUID userId) {
         ResendVerificationResponseDto response = new ResendVerificationResponseDto();
         response.setSent(sent);
         response.setMessage(message);
+        response.setUserId(userId);   // ← pass through so frontend gets it
         return response;
     }
 
